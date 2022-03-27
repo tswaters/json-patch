@@ -8,7 +8,7 @@ It will leave leaf nodes intact, e.g.:
 import { applyPatch } from 'smart-json-patch'
 
 const oldDoc = { items: [], payments: [] }
-const patch = { op: 'add', path: '/items/-', value: { id: '1' } }
+const patch = [{ op: 'add', path: '/items/-', value: { id: '1' } }]
 
 const newDoc = applyPatch(oldDoc, patch)
 assert.deepStrictEqual(newDoc, { items: [{ id: '1' }], payments: [] })
