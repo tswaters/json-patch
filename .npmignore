@@ -1,0 +1,9 @@
+# ide stuff, who needs it.
+.vscode
+
+# don't include test/fixtures
+*.test.mjs
+test-fixtures
+
+# don't include any "pack"d tarballs, it's an accident
+*.tgz

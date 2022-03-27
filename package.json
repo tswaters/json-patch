@@ -1,0 +1,83 @@
+{
+  "name": "smart-json-patch",
+  "version": "0.0.0",
+  "description": "Selectively applies a JSON patch mutating only paths that have changed",
+  "type": "module",
+  "scripts": {
+    "build": "microbundle --compress",
+    "format": "prettier --write .",
+    "lint": "eslint --ext mjs .",
+    "prebuild": "rimraf dist",
+    "prepare": "npm run build",
+    "test": "mocha --experimental-json-modules"
+  },
+  "source": "./index.mjs",
+  "exports": {
+    "require": "./dist/index.cjs",
+    "default": "./dist/index.mjs"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "unpkg": "./dist/index.js",
+  "browserslist": [
+    "node 16"
+  ],
+  "keywords": [
+    "json",
+    "patch",
+    "json patch",
+    "RFC6902"
+  ],
+  "author": "Tyler Waters <tyler.waters@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.12.0",
+    "fast-json-patch": "^3.1.1",
+    "microbundle": "^0.14.2",
+    "mocha": "^9.2.2",
+    "prettier": "^2.6.1"
+  },
+  "mocha": {
+    "spec": "*.test.mjs",
+    "bail": true,
+    "timeout": 0
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "eslintIgnore": [
+    "dist"
+  ],
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended"
+    ],
+    "env": {
+      "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": "latest"
+    },
+    "overrides": [
+      {
+        "files": "*.mjs",
+        "parserOptions": {
+          "sourceType": "script"
+        }
+      },
+      {
+        "files": "*.mjs",
+        "parserOptions": {
+          "sourceType": "module"
+        }
+      },
+      {
+        "files": "*.test.mjs",
+        "env": {
+          "mocha": true
+        }
+      }
+    ]
+  }
+}
