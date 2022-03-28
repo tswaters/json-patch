@@ -24,6 +24,59 @@ describe('fixture tests', () => {
   }
 })
 
+describe('prototype pollution', () => {
+  it('shouldnt pollute when `path` includes prototype', () => {
+    throws(
+      () =>
+        applyPatch({}, [
+          { op: 'add', path: '/prototype/x', value: 'polluted' },
+        ]),
+      (err) => err.message.includes('banned')
+    )
+  })
+  it('shouldnt pollute when `from` includes prototype', () => {
+    throws(
+      () =>
+        applyPatch({}, [{ op: 'copy', from: '/prototype/toString', to: '/' }]),
+      (err) => err.message.includes('banned')
+    )
+  })
+  it('shouldnt pollute when `path` includes constructor', () => {
+    throws(
+      () =>
+        applyPatch({}, [
+          { op: 'add', path: '/constructor/x', value: 'polluted' },
+        ]),
+      (err) => err.message.includes('banned')
+    )
+  })
+  it('shouldnt pollute when `from` includes constructor', () => {
+    throws(
+      () =>
+        applyPatch({}, [
+          { op: 'copy', from: '/constructor/toString', to: '/' },
+        ]),
+      (err) => err.message.includes('banned')
+    )
+  })
+  it('shouldnt pollute when `path` includes __proto__', () => {
+    throws(
+      () =>
+        applyPatch({}, [
+          { op: 'add', path: '/__proto__/x', value: 'polluted' },
+        ]),
+      (err) => err.message.includes('banned')
+    )
+  })
+  it('shouldnt pollute when `from` includes __proto__', () => {
+    throws(
+      () =>
+        applyPatch({}, [{ op: 'copy', from: '/__proto__/toString', to: '/' }]),
+      (err) => err.message.includes('banned')
+    )
+  })
+})
+
 describe('selective clones', () => {
   const obj = {
     id: '123',
