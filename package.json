@@ -56,6 +56,12 @@
     "parserOptions": {
       "ecmaVersion": "latest"
     },
+    "rules": {
+      "eqeqeq": [
+        "error",
+        "smart"
+      ]
+    },
     "overrides": [
       {
         "files": "*.mjs",
