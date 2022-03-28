@@ -38,8 +38,6 @@ export const applyPatch = (doc, ops) => {
         }, newObj)
     }
 
-    let inArray = Array.isArray(newObj)
-    let pointer = newObj
     const components = item.path.substr(1).split('/')
 
     // getting an empty path means operation is applied to entire document
@@ -49,64 +47,70 @@ export const applyPatch = (doc, ops) => {
       if (['move', 'copy'].includes(item.op)) return target
     }
 
-    for (let i = 0; i < components.length; i += 1) {
-      const component = escapeComponent(components[i])
+    let i = 0
+    let inArray
+    let pointer
+    let component
 
-      // don't mutate on test.
-      if (item.op !== 'test') {
-        if (Array.isArray(pointer[component])) {
-          pointer[component] = [...pointer[component]]
-        } else if (
-          !['string', 'number'].includes(typeof pointer[component]) &&
-          pointer[component] != null
-        ) {
-          pointer[component] = { ...pointer[component] }
-        }
+    do {
+      inArray = Array.isArray(!component ? newObj : pointer[component])
+      pointer = !component ? newObj : pointer[component]
+      component = escapeComponent(components[i])
+      if (item.op === 'test') continue
+      if (Array.isArray(pointer[component])) {
+        pointer[component] = [...pointer[component]]
+      } else if (
+        typeof pointer[component] === 'object' &&
+        pointer[component] != null
+      ) {
+        pointer[component] = { ...pointer[component] }
       }
+    } while (
+      ++i < components.length &&
+      typeof pointer[component] !== 'undefined'
+    )
 
-      // this is the last ieration of the components, where changes are applied
-      // else conditions either move `pointer` to the next component, or throw error
+    if (
+      // exited out before finding an object (TypeError likely)
+      (i < components.length && typeof pointer[component] === 'undefined') ||
+      // exited out, can't find target, but using add/move/copy so it's OK.
+      (i === components.length &&
+        !['add', 'move', 'copy'].includes(item.op) &&
+        typeof pointer[component] === 'undefined') ||
+      // trying to push to something that isn't an array
+      //  "-" is a special case meaning "the last element"
+      // otherwise try to ensure we have an index-looking thing in the path
+      // this could be, e.g., '1e3' - and that should be an error because only a "number" should push to array
+      // js of course is loose with this "number" and it's ok parsing a string of scientific notation as number
+      // only accept [0-9]{1,} for inputs here
+      (Array.isArray(pointer) && component !== '-' && /[^0-9]/.test(component))
+    ) {
+      throw new Error(`path ${item.path} does not exist`)
+    }
 
-      if (i === components.length - 1) {
-        if (
-          inArray &&
-          component !== '-' &&
-          parseInt(component, 10) !== pointer.length &&
-          // todo: this isn't correct, allows 1e0 to match '1'
-          // i.e.,  a['1e0'] === a['1'] ; it's expected this doesn't match
-          pointer[component] == null
-        ) {
-          throw new Error(`path ${item.path} does not exist`)
-        }
-
-        switch (item.op) {
-          case 'add':
-            if (inArray && component === '-') pointer.push(item.value)
-            else if (inArray) pointer.splice(component, 0, item.value)
-            else pointer[component] = item.value
-            break
-          case 'replace':
-            if (inArray) pointer.splice(component, 1, item.value)
-            else pointer[component] = item.value
-            break
-          case 'remove':
-            if (inArray) pointer.splice(component, 1)
-            else delete pointer[component] // dirty, dirty.
-            break
-          case 'test':
-            // todo: deepStrictEqual not the same as rfc6902
-            assert.deepStrictEqual(pointer[component], item.value)
-            break
-          case 'move':
-          case 'copy':
-            pointer[component] = target
-            break
-        }
-      } else if (pointer[component] == null) {
-        throw new Error(`path ${item.path} does not exist`)
-      } else {
-        inArray = Array.isArray(pointer[component])
-        pointer = pointer[component]
+    if (i === components.length) {
+      switch (item.op) {
+        case 'add':
+          if (inArray && component === '-') pointer.push(item.value)
+          else if (inArray) pointer.splice(component, 0, item.value)
+          else pointer[component] = item.value
+          break
+        case 'replace':
+          if (inArray) pointer.splice(component, 1, item.value)
+          else pointer[component] = item.value
+          break
+        case 'remove':
+          if (inArray) pointer.splice(component, 1)
+          else delete pointer[component] // dirty, dirty.
+          break
+        case 'test':
+          // todo: deepStrictEqual not the same as rfc6902
+          assert.deepStrictEqual(pointer[component], item.value)
+          break
+        case 'move':
+        case 'copy':
+          pointer[component] = target
+          break
       }
     }
 

@@ -39,7 +39,7 @@
   },
   "mocha": {
     "spec": "*.test.mjs",
-    "bail": true,
+    "bail": false,
     "timeout": 0
   },
   "prettier": {

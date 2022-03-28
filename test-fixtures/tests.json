@@ -84,18 +84,6 @@
     "expected": { "foo": 1, "baz": [{ "qux": "hello", "foo": "world" }] }
   },
   {
-    "comment": "Out of bounds (upper)",
-    "doc": { "bar": [1, 2] },
-    "patch": [{ "op": "add", "path": "/bar/8", "value": "5" }],
-    "error": "path /bar/8 does not exist"
-  },
-  {
-    "comment": "Out of bounds (lower)",
-    "doc": { "bar": [1, 2] },
-    "patch": [{ "op": "add", "path": "/bar/-1", "value": "5" }],
-    "error": "path /bar/-1 does not exist"
-  },
-  {
     "comment": "add path bool true",
     "doc": { "foo": 1 },
     "patch": [{ "op": "add", "path": "/bar", "value": true }],
@@ -397,7 +385,6 @@
     "error": "path /1e0 does not exist"
   },
   {
-    "disabled": true,
     "comment": "test replace with bad number should fail",
     "doc": [""],
     "patch": [{ "op": "replace", "path": "/1e0", "value": false }],
