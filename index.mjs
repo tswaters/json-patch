@@ -14,11 +14,7 @@ export const applyPatch = (doc, ops) => {
   const newObj = Array.isArray(doc) ? [...doc] : { ...doc }
 
   return ops.reduce((newObj, item) => {
-    if (!operations.includes(item.op)) {
-      throw new Error(
-        `Unexpeced operation: ${item.op} expected (${operations.join(',')})`
-      )
-    }
+    if (!operations.includes(item.op)) return
 
     let target
     if (item.op === 'move' || item.op === 'copy') {
