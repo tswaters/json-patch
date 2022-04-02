@@ -1,10 +1,13 @@
 import assert from 'assert'
 
-const isBannedKey = (key) =>
-  ['__proto__', 'constructor', 'prototype'].includes(key)
 
-const escapeComponent = (component) =>
-  component.replace('~1', '/').replace('~0', '~')
+const escapeComponent = (component) => {
+  const escaped = component.replace('~1', '/').replace('~0', '~')
+  if (['__proto__', 'constructor', 'prototype'].includes(escaped)) {
+    throw new Error(`can't mutate ${component} it is banned`)
+  }
+  return escaped
+}
 
 const operations = ['move', 'copy', 'add', 'replace', 'remove', 'test']
 
@@ -24,8 +27,6 @@ export const applyPatch = (doc, ops) => {
         .map(escapeComponent)
         .reduce((acc, component, idx, arr) => {
           let ref = acc[component]
-          if (isBannedKey(component))
-            throw new Error(`can't mutate ${component} it is banned`)
           if (ref == null) throw new Error(`path ${item.from} does not exist`)
           if (idx < arr.length - 1) return ref
           switch (item.op) {
@@ -58,8 +59,6 @@ export const applyPatch = (doc, ops) => {
       pointer = !component ? newObj : pointer[component]
       component = escapeComponent(components[i])
       if (item.op === 'test') continue
-      if (isBannedKey(component))
-        throw new Error(`can't mutate ${component} it is banned`)
 
       if (Array.isArray(pointer[component])) {
         pointer[component] = [...pointer[component]]
