@@ -1,4 +1,29 @@
-import assert from 'assert'
+const testEquality = (first, second) => {
+  if (typeof first !== typeof second) return false
+  if (['string', 'number'].includes(typeof first)) {
+    return first === second
+  }
+  if (first == null && second == null) {
+    return true
+  }
+  if (Array.isArray(first)) {
+    return !first.some((value, index) => !testEquality(value, second[index]))
+  } else {
+    return !Object.entries(first).some(
+      ([key, value]) => !testEquality(value, second[key]),
+    )
+  }
+}
+
+const assertEquality = (first, second) => {
+  if (!testEquality(first, second)) {
+    const error = new Error(
+      `assertion failed, expected ${first} to equal ${second}`,
+    )
+    error.code = 'ERR_ASSERTION'
+    throw error
+  }
+}
 
 const escapeComponent = (component) => {
   const escaped = component.replace('~1', '/').replace('~0', '~')
@@ -43,7 +68,7 @@ export const applyPatch = (doc, ops) => {
 
     // getting an empty path means operation is applied to entire document
     if (item.path === '') {
-      if (item.op === 'test') assert.deepStrictEqual(newObj, item.value)
+      if (item.op === 'test') assertEquality(newObj, item.value)
       if (['replace', 'add', 'test'].includes(item.op)) return item.value
       if (['move', 'copy'].includes(item.op)) return target
     }
@@ -106,8 +131,7 @@ export const applyPatch = (doc, ops) => {
           else delete pointer[component] // dirty, dirty.
           break
         case 'test':
-          // todo: deepStrictEqual not the same as rfc6902
-          assert.deepStrictEqual(pointer[component], item.value)
+          assertEquality(pointer[component], item.value)
           break
         case 'move':
         case 'copy':
