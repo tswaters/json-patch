@@ -1,10 +1,10 @@
-import v8 from 'v8'
-import { throws, deepStrictEqual, ok } from 'assert'
+import v8 from 'node:v8'
+import { throws, deepStrictEqual, ok } from 'node:assert'
 import fastJsonPatch from 'fast-json-patch'
 import { applyPatch } from './index.mjs'
 
-import specTests from './test-fixtures/spec-tests.json'
-import tests from './test-fixtures/tests.json'
+import specTests from './test-fixtures/spec-tests.json' with { type: 'json' }
+import tests from './test-fixtures/tests.json' with { type: 'json' }
 
 const { compare } = fastJsonPatch
 
@@ -17,9 +17,10 @@ describe('fixture tests', () => {
       test.error
         ? throws(
             () => applyPatch(test.doc, test.patch),
-            (err) => err.message.includes(test.error) || err.code === test.error
+            (err) =>
+              err.message.includes(test.error) || err.code === test.error,
           )
-        : deepStrictEqual(applyPatch(test.doc, test.patch), test.expected)
+        : deepStrictEqual(applyPatch(test.doc, test.patch), test.expected),
     )
   }
 })
@@ -31,14 +32,14 @@ describe('prototype pollution', () => {
         applyPatch({}, [
           { op: 'add', path: '/prototype/x', value: 'polluted' },
         ]),
-      (err) => err.message.includes('banned')
+      (err) => err.message.includes('banned'),
     )
   })
   it('shouldnt pollute when `from` includes prototype', () => {
     throws(
       () =>
         applyPatch({}, [{ op: 'copy', from: '/prototype/toString', to: '/' }]),
-      (err) => err.message.includes('banned')
+      (err) => err.message.includes('banned'),
     )
   })
   it('shouldnt pollute when `path` includes constructor', () => {
@@ -47,7 +48,7 @@ describe('prototype pollution', () => {
         applyPatch({}, [
           { op: 'add', path: '/constructor/x', value: 'polluted' },
         ]),
-      (err) => err.message.includes('banned')
+      (err) => err.message.includes('banned'),
     )
   })
   it('shouldnt pollute when `from` includes constructor', () => {
@@ -56,7 +57,7 @@ describe('prototype pollution', () => {
         applyPatch({}, [
           { op: 'copy', from: '/constructor/toString', to: '/' },
         ]),
-      (err) => err.message.includes('banned')
+      (err) => err.message.includes('banned'),
     )
   })
   it('shouldnt pollute when `path` includes __proto__', () => {
@@ -65,14 +66,14 @@ describe('prototype pollution', () => {
         applyPatch({}, [
           { op: 'add', path: '/__proto__/x', value: 'polluted' },
         ]),
-      (err) => err.message.includes('banned')
+      (err) => err.message.includes('banned'),
     )
   })
   it('shouldnt pollute when `from` includes __proto__', () => {
     throws(
       () =>
         applyPatch({}, [{ op: 'copy', from: '/__proto__/toString', to: '/' }]),
-      (err) => err.message.includes('banned')
+      (err) => err.message.includes('banned'),
     )
   })
 })

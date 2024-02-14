@@ -1,6 +1,5 @@
 import assert from 'assert'
 
-
 const escapeComponent = (component) => {
   const escaped = component.replace('~1', '/').replace('~0', '~')
   if (['__proto__', 'constructor', 'prototype'].includes(escaped)) {
